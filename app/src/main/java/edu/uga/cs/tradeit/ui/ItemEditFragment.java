@@ -22,64 +22,69 @@ import com.google.firebase.database.FirebaseDatabase;
 import edu.uga.cs.tradeit.R;
 import edu.uga.cs.tradeit.models.Item;
 
-public class ItemPostFragment extends Fragment {
+public class ItemEditFragment extends Fragment {
 
+    private static final String ARG_ID = "id";
+    private static final String ARG_NAME = "name";
     private static final String ARG_CATEGORY_ID = "categoryId";
-    private static final String ARG_CATEGORY_NAME = "categoryName";
-
-    private String categoryId;
-    private String categoryName;
+    private static final String ARG_PRICE = "price";
+    private static final String ARG_FREE = "free";
 
     private EditText etName, etPrice;
     private CheckBox cbFree;
-    private Button btnPost;
+    private Button btnSave;
+
+    private String itemId;
+    private String categoryId;
 
     private DatabaseReference itemsRef;
 
-    public static ItemPostFragment newInstance(String categoryId, String categoryName) {
-        ItemPostFragment f = new ItemPostFragment();
-        Bundle b = new Bundle();
-        b.putString(ARG_CATEGORY_ID, categoryId);
-        b.putString(ARG_CATEGORY_NAME, categoryName);
-        f.setArguments(b);
+    public static ItemEditFragment newInstance(Item item) {
+        ItemEditFragment f = new ItemEditFragment();
+        Bundle args = new Bundle();
+
+        args.putString(ARG_ID, item.id);
+        args.putString(ARG_NAME, item.name);
+        args.putString(ARG_CATEGORY_ID, item.categoryId);
+        args.putDouble(ARG_PRICE, item.price);
+        args.putBoolean(ARG_FREE, item.free);
+
+        f.setArguments(args);
         return f;
     }
-
-    public static ItemPostFragment newEditInstance(Item item) {
-        ItemPostFragment f = new ItemPostFragment();
-        Bundle b = new Bundle();
-        b.putString("id", item.id);
-        b.putString("name", item.name);
-        b.putString("categoryId", item.categoryId);
-        b.putDouble("price", item.price);
-        b.putBoolean("free", item.free);
-        f.setArguments(b);
-        return f;
-    }
-
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_item_post, container, false);
-
-        if (getArguments() != null) {
-            categoryId = getArguments().getString(ARG_CATEGORY_ID);
-            categoryName = getArguments().getString(ARG_CATEGORY_NAME);
-            requireActivity().setTitle("Post in " + categoryName);
-        }
+        View view = inflater.inflate(R.layout.fragment_item_edit, container, false);
 
         etName = view.findViewById(R.id.etName);
         etPrice = view.findViewById(R.id.etPrice);
         cbFree = view.findViewById(R.id.cbFree);
-        btnPost = view.findViewById(R.id.btnPost);
+        btnSave = view.findViewById(R.id.btnSave);
 
         itemsRef = FirebaseDatabase.getInstance().getReference("items");
 
-        cbFree.setOnCheckedChangeListener((btn, checked) -> {
-            if (checked) {
+        if (getArguments() != null) {
+            itemId = getArguments().getString(ARG_ID);
+            categoryId = getArguments().getString(ARG_CATEGORY_ID);
+
+            etName.setText(getArguments().getString(ARG_NAME));
+
+            boolean isFree = getArguments().getBoolean(ARG_FREE);
+            cbFree.setChecked(isFree);
+
+            if (!isFree) {
+                etPrice.setText(String.valueOf(getArguments().getDouble(ARG_PRICE)));
+            } else {
+                etPrice.setEnabled(false);
+            }
+        }
+
+        cbFree.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
                 etPrice.setEnabled(false);
                 etPrice.setText("");
             } else {
@@ -87,25 +92,30 @@ public class ItemPostFragment extends Fragment {
             }
         });
 
-        btnPost.setOnClickListener(v -> postItem());
+        btnSave.setOnClickListener(v -> saveItem());
 
         return view;
     }
 
-    private void postItem() {
+    private void saveItem() {
+        if (itemId == null) {
+            Toast.makeText(getContext(), "Error: No item ID", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String name = etName.getText().toString().trim();
         String priceText = etPrice.getText().toString().trim();
         boolean free = cbFree.isChecked();
+        double price = 0.0;
 
         if (TextUtils.isEmpty(name)) {
             etName.setError("Name required");
             return;
         }
 
-        double price = 0.0;
         if (!free) {
             if (TextUtils.isEmpty(priceText)) {
-                etPrice.setError("Price required if not free");
+                etPrice.setError("Price required");
                 return;
             }
             try {
@@ -122,17 +132,10 @@ public class ItemPostFragment extends Fragment {
             return;
         }
 
-        // Generate Firebase push ID
-        String id = itemsRef.push().getKey();
-        if (id == null) {
-            Toast.makeText(getContext(), "Error generating ID", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         long now = System.currentTimeMillis();
 
-        Item item = new Item(
-                id,
+        Item updated = new Item(
+                itemId,
                 name,
                 categoryId,
                 user.getUid(),
@@ -141,13 +144,13 @@ public class ItemPostFragment extends Fragment {
                 free
         );
 
-        itemsRef.child(id).setValue(item)
+        itemsRef.child(itemId).setValue(updated)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(getContext(), "Item posted", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Item updated", Toast.LENGTH_SHORT).show();
                         requireActivity().getSupportFragmentManager().popBackStack();
                     } else {
-                        Toast.makeText(getContext(), "Error posting item", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Error updating item", Toast.LENGTH_SHORT).show();
                     }
                 });
     }

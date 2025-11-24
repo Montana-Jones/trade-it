@@ -1,0 +1,143 @@
+package edu.uga.cs.tradeit;
+
+import android.os.Bundle;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import edu.uga.cs.tradeit.R;
+import edu.uga.cs.tradeit.models.Transaction;
+
+public class PendingTransactionsActivity extends AppCompatActivity {
+
+    private RecyclerView rvTransactions;
+    private PendingTransactionAdapter adapter;
+    private List<Transaction> transactionList = new ArrayList<>();
+    private DatabaseReference transactionsRef;
+    private ValueEventListener transactionsListener;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_pending_transactions);
+
+        rvTransactions = findViewById(R.id.rvTransactions);
+        rvTransactions.setLayoutManager(new LinearLayoutManager(this));
+
+        adapter = new PendingTransactionAdapter(transactionList);
+        rvTransactions.setAdapter(adapter);
+
+        transactionsRef = FirebaseDatabase.getInstance().getReference("transactions");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        attachListener();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (transactionsListener != null) {
+            transactionsRef.removeEventListener(transactionsListener);
+        }
+    }
+
+    private void attachListener() {
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        transactionsListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                transactionList.clear();
+                for (DataSnapshot child : snapshot.getChildren()) {
+                    Transaction t = child.getValue(Transaction.class);
+                    if (t != null && !t.completed &&
+                            (t.buyerId.equals(currentUserId) || t.sellerId.equals(currentUserId))) {
+                        transactionList.add(t);
+                    }
+                }
+
+                // Sort newest → oldest
+                Collections.sort(transactionList, (a, b) -> Long.compare(b.timestamp, a.timestamp));
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(PendingTransactionsActivity.this, "Failed to load transactions.", Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        transactionsRef.addValueEventListener(transactionsListener);
+    }
+
+    // --------------------------
+    // Adapter for Pending Transactions
+    // --------------------------
+    private static class PendingTransactionAdapter extends RecyclerView.Adapter<PendingTransactionAdapter.ViewHolder> {
+        private final List<Transaction> transactions;
+
+        PendingTransactionAdapter(List<Transaction> transactions) {
+            this.transactions = transactions;
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_pending_transaction, parent, false);
+            return new ViewHolder(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            Transaction t = transactions.get(position);
+            holder.tvItemName.setText(t.itemName);
+
+            String role = FirebaseAuth.getInstance().getCurrentUser().getUid().equals(t.buyerId) ? "Buyer" : "Seller";
+            holder.tvRole.setText(role);
+
+            String date = DateFormat.getDateTimeInstance().format(t.timestamp);
+            holder.tvTimestamp.setText(date);
+        }
+
+        @Override
+        public int getItemCount() {
+            return transactions.size();
+        }
+
+        static class ViewHolder extends RecyclerView.ViewHolder {
+            TextView tvItemName, tvRole, tvTimestamp;
+
+            ViewHolder(@NonNull View itemView) {
+                super(itemView);
+                tvItemName = itemView.findViewById(R.id.tvItemName);
+                tvRole = itemView.findViewById(R.id.tvRole);
+                tvTimestamp = itemView.findViewById(R.id.tvTimestamp);
+            }
+        }
+    }
+}
