@@ -171,12 +171,18 @@ public class ItemListFragment extends Fragment {
                 transactionId,
                 item.id,
                 item.name,
-                currentUserId,  // buyer
-                item.postedBy,  // seller
-                now,
-                false,
-                0
+                currentUserId,
+                item.postedBy,
+                now
         );
+
+        // Set defaults
+        transaction.completed = false;
+        transaction.buyerConfirmed = false;
+        transaction.sellerConfirmed = false;
+        transaction.completedAt = 0;
+
+
 
         DatabaseReference transactionsRef = FirebaseDatabase.getInstance().getReference("transactions");
         transactionsRef.child(transactionId).setValue(transaction)

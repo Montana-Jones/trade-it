@@ -9,6 +9,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar">
         <activity
+            android:name=".SplashActivity"
+            android:exported="false" />
+        <activity
             android:name=".PendingTransactionsActivity"
             android:exported="false" />
         <activity

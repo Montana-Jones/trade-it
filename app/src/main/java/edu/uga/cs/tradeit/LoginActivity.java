@@ -17,6 +17,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import edu.uga.cs.tradeit.SplashActivity;
+
 public class LoginActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
@@ -74,7 +76,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void goToMain() {
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        Intent intent = new Intent(LoginActivity.this, SplashActivity.class);
         startActivity(intent);
         finish();
     }
