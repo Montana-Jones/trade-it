@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -32,6 +33,8 @@ import edu.uga.cs.tradeit.models.Transaction;
 public class PendingTransactionsActivity extends AppCompatActivity {
 
     private RecyclerView rvTransactions;
+    private TextView tvNoTransactions;
+
     private PendingTransactionAdapter adapter;
     private List<Transaction> transactionList = new ArrayList<>();
     private DatabaseReference transactionsRef;
@@ -41,6 +44,10 @@ public class PendingTransactionsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pending_transactions);
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        tvNoTransactions = findViewById(R.id.tvNoTransactions);
         rvTransactions = findViewById(R.id.rvTransactions);
         rvTransactions.setLayoutManager(new LinearLayoutManager(this));
 
@@ -69,10 +76,19 @@ public class PendingTransactionsActivity extends AppCompatActivity {
                         transactionList.add(t);
                     }
                 }
-                // Sort newest → oldest
                 Collections.sort(transactionList, (a, b) -> Long.compare(b.timestamp, a.timestamp));
                 adapter.notifyDataSetChanged();
+
+                // Show or hide "no pending transactions"
+                if (transactionList.isEmpty()) {
+                    tvNoTransactions.setVisibility(View.VISIBLE);
+                    rvTransactions.setVisibility(View.GONE);
+                } else {
+                    tvNoTransactions.setVisibility(View.GONE);
+                    rvTransactions.setVisibility(View.VISIBLE);
+                }
             }
+
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) { }

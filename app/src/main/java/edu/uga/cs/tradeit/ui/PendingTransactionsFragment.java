@@ -1,10 +1,15 @@
 package edu.uga.cs.tradeit.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,11 +30,14 @@ import java.util.Comparator;
 import java.util.List;
 
 import edu.uga.cs.tradeit.R;
+import edu.uga.cs.tradeit.SplashActivity;
 import edu.uga.cs.tradeit.models.Transaction;
 
 public class PendingTransactionsFragment extends Fragment {
 
     private RecyclerView rvTransactions;
+    private TextView tvNoTransactions;
+
     private TransactionAdapter adapter;
     private List<Transaction> transactionList = new ArrayList<>();
     private DatabaseReference transactionsRef;
@@ -48,6 +56,7 @@ public class PendingTransactionsFragment extends Fragment {
         rvTransactions = view.findViewById(R.id.rvTransactions);
         rvTransactions.setLayoutManager(new LinearLayoutManager(getContext()));
 
+
         currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         adapter = new TransactionAdapter(transactionList, currentUserId, this::markTransactionCompleted);
         rvTransactions.setAdapter(adapter);
@@ -56,6 +65,31 @@ public class PendingTransactionsFragment extends Fragment {
 
         return view;
     }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        AppCompatActivity activity = (AppCompatActivity) requireActivity();
+        Toolbar toolbar = view.findViewById(R.id.toolbar); // or get from activity layout
+        activity.setSupportActionBar(toolbar);
+
+        // Enable the back button in the ActionBar
+        if (activity.getSupportActionBar() != null) {
+            activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            activity.getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+
+        toolbar.setNavigationOnClickListener(v -> {
+            // Go back to main menu
+            Intent intent = new Intent(requireContext(), SplashActivity.class);
+            startActivity(intent);
+            activity.finish();
+        });
+    }
+
+
+
 
     private void markTransactionCompleted(Transaction transaction) {
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -101,15 +135,25 @@ public class PendingTransactionsFragment extends Fragment {
                     for (DataSnapshot child : snapshot.getChildren()) {
                         Transaction t = child.getValue(Transaction.class);
                         if (t != null &&
-                                t.completed &&
+                                !t.completed &&  // pending transactions
                                 (t.buyerId.equals(currentUserId) || t.sellerId.equals(currentUserId))) {
                             transactionList.add(t);
                         }
                     }
+
                     // Sort by timestamp descending
                     Collections.sort(transactionList, (a, b) -> Long.compare(b.timestamp, a.timestamp));
                     adapter.notifyDataSetChanged();
+
+                    // Show/hide "no pending transactions" text
+                    if (transactionList.isEmpty()) {
+                        rvTransactions.setVisibility(View.GONE);
+                    } else {
+                        tvNoTransactions.setVisibility(View.GONE);
+                        rvTransactions.setVisibility(View.VISIBLE);
+                    }
                 }
+
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) { }

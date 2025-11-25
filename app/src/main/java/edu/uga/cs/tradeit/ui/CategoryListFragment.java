@@ -1,5 +1,6 @@
 package edu.uga.cs.tradeit.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -8,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.Toast;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,7 +29,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import edu.uga.cs.tradeit.MainActivity;
 import edu.uga.cs.tradeit.R;
+import edu.uga.cs.tradeit.SplashActivity;
 import edu.uga.cs.tradeit.models.Category;
 
 public class CategoryListFragment extends Fragment implements CategoryAdapter.CategoryListener {
@@ -67,6 +71,25 @@ public class CategoryListFragment extends Fragment implements CategoryAdapter.Ca
 
         return view;
     }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        Toolbar toolbar = requireActivity().findViewById(R.id.toolbar);
+
+        // Show back button
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back); // your back arrow icon
+        toolbar.setNavigationOnClickListener(v -> {
+            // Go back to SplashActivity
+            Intent intent = new Intent(requireContext(), SplashActivity.class);
+            startActivity(intent);
+            requireActivity().finish(); // optional: finish current activity so it's removed from back stack
+        });
+    }
+
+
+
 
     @Override
     public void onStart() {
