@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import edu.uga.cs.tradeit.MainActivity;
 import edu.uga.cs.tradeit.R;
 import edu.uga.cs.tradeit.models.Category;
 import com.google.firebase.auth.FirebaseAuth;
@@ -69,14 +70,12 @@ public class CategoryEditFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Toolbar toolbar = view.findViewById(R.id.toolbar);
+        MainActivity activity = (MainActivity) requireActivity();
+        activity.setToolbarTitle("Edit Category");
 
-        // Show back button
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back); // use a back arrow icon
-        toolbar.setNavigationOnClickListener(v -> {
-            requireActivity().getSupportFragmentManager().popBackStack();
-            // or navigate to main menu fragment
-        });
+        Toolbar toolbar = activity.findViewById(R.id.toolbar);
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        toolbar.setNavigationOnClickListener(v -> activity.getSupportFragmentManager().popBackStack());
     }
 
 

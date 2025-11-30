@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import edu.uga.cs.tradeit.MainActivity;
 import edu.uga.cs.tradeit.R;
 import edu.uga.cs.tradeit.models.Item;
 import edu.uga.cs.tradeit.models.Transaction;
@@ -38,6 +40,8 @@ public class ItemListFragment extends Fragment {
     private String categoryName;
 
     private RecyclerView rvItems;
+    private TextView tvNoItems;
+
     private FloatingActionButton fabAddItem;
     private ItemAdapter adapter;
     private List<Item> itemList = new ArrayList<>();
@@ -68,6 +72,7 @@ public class ItemListFragment extends Fragment {
 
         rvItems = view.findViewById(R.id.rvItems);
         fabAddItem = view.findViewById(R.id.fabAddItem);
+        tvNoItems = view.findViewById(R.id.tvNoItems);
         rvItems.setLayoutManager(new LinearLayoutManager(getContext()));
 
         adapter = new ItemAdapter(itemList, new ItemAdapter.OnItemActionListener() {
@@ -92,14 +97,12 @@ public class ItemListFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Toolbar toolbar = requireActivity().findViewById(R.id.toolbar);
+        MainActivity activity = (MainActivity) requireActivity();
+        activity.setToolbarTitle("Items");
 
-        // Show back button
+        Toolbar toolbar = activity.findViewById(R.id.toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
-        toolbar.setNavigationOnClickListener(v -> {
-            requireActivity().getSupportFragmentManager()
-                    .popBackStack(); // go back to previous fragment
-        });
+        toolbar.setNavigationOnClickListener(v -> activity.getSupportFragmentManager().popBackStack());
     }
 
 
@@ -128,7 +131,18 @@ public class ItemListFragment extends Fragment {
                     }
                     Collections.sort(itemList, (a, b) -> Long.compare(b.postedAt, a.postedAt));
                     adapter.notifyDataSetChanged();
+
+                    // Show "no items" if empty
+                    if (itemList.isEmpty()) {
+                        tvNoItems.setVisibility(View.VISIBLE);
+                        rvItems.setVisibility(View.GONE);
+                    } else {
+                        tvNoItems.setVisibility(View.GONE);
+                        rvItems.setVisibility(View.VISIBLE);
+                    }
                 }
+
+
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) { }
             };

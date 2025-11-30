@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.widget.Toolbar;
 
@@ -31,13 +32,13 @@ import java.util.List;
 
 import edu.uga.cs.tradeit.MainActivity;
 import edu.uga.cs.tradeit.R;
-import edu.uga.cs.tradeit.SplashActivity;
 import edu.uga.cs.tradeit.models.Category;
 
 public class CategoryListFragment extends Fragment implements CategoryAdapter.CategoryListener {
 
     private RecyclerView rvCategories;
     private CategoryAdapter adapter;
+    private TextView tvNoCategories;
     private List<Category> categoryList = new ArrayList<>();
 
     private DatabaseReference categoriesRef;
@@ -57,6 +58,7 @@ public class CategoryListFragment extends Fragment implements CategoryAdapter.Ca
         rvCategories.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new CategoryAdapter(categoryList, this);
         rvCategories.setAdapter(adapter);
+        tvNoCategories = view.findViewById(R.id.tvNoCategories);
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
@@ -76,15 +78,19 @@ public class CategoryListFragment extends Fragment implements CategoryAdapter.Ca
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Toolbar toolbar = requireActivity().findViewById(R.id.toolbar);
+        MainActivity activity = (MainActivity) requireActivity();
+        activity.setToolbarTitle("Categories");
 
-        // Show back button
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back); // your back arrow icon
+        Toolbar toolbar = activity.findViewById(R.id.toolbar);
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+
         toolbar.setNavigationOnClickListener(v -> {
             // Go back to SplashActivity
-            Intent intent = new Intent(requireContext(), SplashActivity.class);
-            startActivity(intent);
-            requireActivity().finish(); // optional: finish current activity so it's removed from back stack
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.container, new SplashFragment())
+                    .addToBackStack(null) // optional
+                    .commit();
         });
     }
 
@@ -118,6 +124,15 @@ public class CategoryListFragment extends Fragment implements CategoryAdapter.Ca
                     Collections.sort(categoryList,
                             (a, b) -> a.name.compareToIgnoreCase(b.name));
                     adapter.notifyDataSetChanged();
+
+                    // Show "no items" if empty
+                    if (categoryList.isEmpty()) {
+                        tvNoCategories.setVisibility(View.VISIBLE);
+                        rvCategories.setVisibility(View.GONE);
+                    } else {
+                        tvNoCategories.setVisibility(View.GONE);
+                        rvCategories.setVisibility(View.VISIBLE);
+                    }
                 }
 
                 @Override

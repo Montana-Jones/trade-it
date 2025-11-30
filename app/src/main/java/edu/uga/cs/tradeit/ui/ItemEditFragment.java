@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -19,6 +20,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import edu.uga.cs.tradeit.MainActivity;
 import edu.uga.cs.tradeit.R;
 import edu.uga.cs.tradeit.models.Item;
 
@@ -93,6 +95,13 @@ public class ItemEditFragment extends Fragment {
         });
 
         btnSave.setOnClickListener(v -> saveItem());
+
+        MainActivity activity = (MainActivity) requireActivity();
+        activity.setToolbarTitle("Edit Item");
+
+        Toolbar toolbar = activity.findViewById(R.id.toolbar);
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        toolbar.setNavigationOnClickListener(v -> activity.getSupportFragmentManager().popBackStack());
 
         return view;
     }

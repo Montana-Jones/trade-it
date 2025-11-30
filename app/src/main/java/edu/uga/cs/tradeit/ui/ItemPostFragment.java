@@ -9,10 +9,10 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
-import androidx.appcompat.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -20,6 +20,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import edu.uga.cs.tradeit.MainActivity;
 import edu.uga.cs.tradeit.R;
 import edu.uga.cs.tradeit.models.Item;
 
@@ -90,21 +91,19 @@ public class ItemPostFragment extends Fragment {
 
         btnPost.setOnClickListener(v -> postItem());
 
+        MainActivity activity = (MainActivity) requireActivity();
+        activity.setToolbarTitle("Add Item");
+
+        Toolbar toolbar = activity.findViewById(R.id.toolbar);
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        toolbar.setNavigationOnClickListener(v -> activity.getSupportFragmentManager().popBackStack());
+
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        Toolbar toolbar = view.findViewById(R.id.toolbar);
-
-        // Show back button
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back); // use a back arrow icon
-        toolbar.setNavigationOnClickListener(v -> {
-            requireActivity().getSupportFragmentManager().popBackStack();
-            // or navigate to main menu fragment
-        });
     }
 
 
