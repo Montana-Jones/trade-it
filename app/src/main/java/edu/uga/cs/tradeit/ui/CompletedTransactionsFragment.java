@@ -32,35 +32,35 @@ import edu.uga.cs.tradeit.R;
 import edu.uga.cs.tradeit.models.Item;
 import edu.uga.cs.tradeit.models.Transaction;
 
-public class PendingTransactionsFragment extends Fragment {
+public class CompletedTransactionsFragment extends Fragment {
 
     private RecyclerView rvTransactions;
     private TextView tvNoTransactions;
 
-    private PendingTransactionAdapter adapter;
+    private CompletedTransactionAdapter adapter;
     private List<Transaction> transactionList = new ArrayList<>();
     private DatabaseReference transactionsRef;
 
-    public PendingTransactionsFragment() { }
+    public CompletedTransactionsFragment() { }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_pending_transactions, container, false);
+        View view = inflater.inflate(R.layout.fragment_completed_transactions, container, false);
 
         tvNoTransactions = view.findViewById(R.id.tvNoTransactions);
         rvTransactions = view.findViewById(R.id.rvTransactions);
         rvTransactions.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        adapter = new PendingTransactionAdapter(transactionList);
+        adapter = new CompletedTransactionAdapter(transactionList);
         rvTransactions.setAdapter(adapter);
 
         transactionsRef = FirebaseDatabase.getInstance().getReference("transactions");
 
         MainActivity activity = (MainActivity) requireActivity();
-        activity.setToolbarTitle("Pending Transactions");
+        activity.setToolbarTitle("Completed Transactions");
 
         Toolbar toolbar = activity.findViewById(R.id.toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
@@ -84,7 +84,7 @@ public class PendingTransactionsFragment extends Fragment {
                 transactionList.clear();
                 for (DataSnapshot child : snapshot.getChildren()) {
                     Transaction t = child.getValue(Transaction.class);
-                    if (t != null && (t.buyerId.equals(currentUserId) || t.sellerId.equals(currentUserId)) && !t.completed) {
+                    if (t != null && (t.buyerId.equals(currentUserId) || t.sellerId.equals(currentUserId)) && t.completed) {
                         transactionList.add(t);
                     }
                 }
@@ -108,15 +108,15 @@ public class PendingTransactionsFragment extends Fragment {
     // -------------------------------
     // Adapter
     // -------------------------------
-    private class PendingTransactionAdapter extends RecyclerView.Adapter<PendingTransactionAdapter.ViewHolder> {
+    private class CompletedTransactionAdapter extends RecyclerView.Adapter<CompletedTransactionAdapter.ViewHolder> {
         private final List<Transaction> transactions;
 
-        PendingTransactionAdapter(List<Transaction> transactions) { this.transactions = transactions; }
+        CompletedTransactionAdapter(List<Transaction> transactions) { this.transactions = transactions; }
 
         @NonNull
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_pending_transaction, parent, false);
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_completed_transaction, parent, false);
             return new ViewHolder(v);
         }
 
@@ -125,61 +125,11 @@ public class PendingTransactionsFragment extends Fragment {
             Transaction t = transactions.get(position);
             String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
             boolean isBuyer = currentUserId.equals(t.buyerId);
-            boolean isSeller = currentUserId.equals(t.sellerId);
 
             holder.tvItemName.setText(t.itemName);
             holder.tvRole.setText(isBuyer ? "Buyer" : "Seller");
             holder.tvTimestamp.setText(DateFormat.getDateTimeInstance().format(t.timestamp));
-
-            if (isBuyer && t.buyerConfirmed) {
-                holder.btnConfirm.setText("Awaiting Seller's Response");
-            } else if (isSeller && t.sellerConfirmed) {
-                holder.btnConfirm.setText("Awaiting Buyer's Response");
-            } else {
-                holder.btnConfirm.setText("Mark as Completed");
-            }
-            holder.btnDecline.setText(isBuyer ? "Cancel Offer" : "Decline Transaction");
-
-            holder.btnConfirm.setOnClickListener(v -> {
-                if (isBuyer) t.buyerConfirmed = true;
-                if (isSeller) t.sellerConfirmed = true;
-
-                if (t.buyerConfirmed && t.sellerConfirmed) {
-                    t.completed = true;
-                    Toast.makeText(getActivity(), "Transaction Completed!", Toast.LENGTH_SHORT).show();
-                }
-
-                transactionsRef.child(t.id).setValue(t);
-                notifyDataSetChanged();
-            });
-
-            holder.btnDecline.setOnClickListener(v -> {
-                // Remove transaction
-                transactionsRef.child(t.id).removeValue();
-
-                // Restore item in Firebase
-                DatabaseReference itemsRef = FirebaseDatabase.getInstance().getReference("items");
-
-                // Either retrieve original Item details or store them in the Transaction object
-                Item returnedItem = new Item(
-                        t.itemId,
-                        t.itemName,
-                        t.categoryId,    // must use original categoryId
-                        t.sellerId,
-                        t.postedAt,      // original timestamp
-                        t.price,
-                        t.free
-                );
-
-                itemsRef.child(t.itemId).setValue(returnedItem);
-
-                Toast.makeText(getActivity(),
-                        isBuyer ? "Offer canceled." : "Transaction declined.",
-                        Toast.LENGTH_SHORT).show();
-
-                transactions.remove(t);
-                notifyDataSetChanged();
-            });
+                        
         }
 
         @Override
@@ -187,15 +137,12 @@ public class PendingTransactionsFragment extends Fragment {
 
         class ViewHolder extends RecyclerView.ViewHolder {
             TextView tvItemName, tvRole, tvTimestamp;
-            Button btnConfirm, btnDecline;
 
             ViewHolder(@NonNull View itemView) {
                 super(itemView);
                 tvItemName = itemView.findViewById(R.id.tvItemName);
                 tvRole = itemView.findViewById(R.id.tvRole);
                 tvTimestamp = itemView.findViewById(R.id.tvTimestamp);
-                btnConfirm = itemView.findViewById(R.id.btnConfirm);
-                btnDecline = itemView.findViewById(R.id.btnDecline);
             }
         }
     }

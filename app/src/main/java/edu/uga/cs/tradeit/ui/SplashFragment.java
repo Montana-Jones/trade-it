@@ -48,13 +48,13 @@ public class SplashFragment extends Fragment {
                         .commit()
         );
 
-//        btnCompletedTransactions.setOnClickListener(v ->
-//                getParentFragmentManager()
-//                        .beginTransaction()
-//                        .replace(R.id.container, new CompletedTransactionsFragment())
-//                        .addToBackStack(null)
-//                        .commit()
-//        );
+        btnCompletedTransactions.setOnClickListener(v ->
+                getParentFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.container, new CompletedTransactionsFragment())
+                        .addToBackStack(null)
+                        .commit()
+        );
 
         MainActivity activity = (MainActivity) requireActivity();
         activity.setToolbarTitle("Home");

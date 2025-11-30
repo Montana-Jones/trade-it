@@ -198,12 +198,16 @@ public class ItemListFragment extends Fragment {
         long now = System.currentTimeMillis();
 
         Transaction transaction = new Transaction(
-                transactionId,
-                item.id,
-                item.name,
-                currentUserId,
-                item.postedBy,
-                now
+                transactionId,     // transaction ID
+                item.id,           // item ID
+                item.name,         // item name
+                item.categoryId,   // category ID
+                item.postedAt,     // original posted timestamp
+                item.price,        // price
+                item.free,         // free flag
+                currentUserId,     // buyer ID
+                item.postedBy,     // seller ID
+                now                // timestamp of transaction creation
         );
 
         // Set defaults
@@ -212,8 +216,6 @@ public class ItemListFragment extends Fragment {
         transaction.sellerConfirmed = false;
         transaction.completedAt = 0;
 
-
-
         DatabaseReference transactionsRef = FirebaseDatabase.getInstance().getReference("transactions");
         transactionsRef.child(transactionId).setValue(transaction)
                 .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Transaction pending for buyer & seller!", Toast.LENGTH_SHORT).show())
@@ -221,6 +223,7 @@ public class ItemListFragment extends Fragment {
 
         adapter.notifyDataSetChanged();
     }
+
 
     private void deleteItem(Item item) {
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();

@@ -108,7 +108,7 @@ public class LoginFragment extends Fragment {
         // Navigate to the main content fragment
         getParentFragmentManager()
                 .beginTransaction()
-                .replace(R.id.container, new CategoryListFragment())
+                .replace(R.id.container, new SplashFragment())
                 .commit();
     }
 }

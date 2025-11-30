@@ -47,6 +47,7 @@ dependencies {
     implementation libs.constraintlayout
 
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
+    implementation libs.legacy.support.v4
 
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
