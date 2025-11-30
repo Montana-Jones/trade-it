@@ -7,7 +7,10 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
 
@@ -42,9 +45,20 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Item item = items.get(position);
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         holder.tvName.setText(item.name);
         holder.tvPrice.setText(item.free ? "Free" : "$" + item.price);
+
+        if (item.postedBy.equals(currentUserId)) {
+            holder.itemView.setBackgroundColor(
+                    ContextCompat.getColor(holder.itemView.getContext(), R.color.user_item_background)
+            );
+        } else {
+            holder.itemView.setBackgroundColor(
+                    ContextCompat.getColor(holder.itemView.getContext(), android.R.color.transparent)
+            );
+        }
 
         // Show popup menu for edit/delete
         holder.itemView.setOnLongClickListener(v -> {
