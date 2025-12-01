@@ -61,6 +61,8 @@ public class SplashFragment extends Fragment {
 
         Toolbar toolbar = activity.findViewById(R.id.toolbar);
 
+        toolbar.setNavigationIcon(null);
+
         return view;
     }
 }

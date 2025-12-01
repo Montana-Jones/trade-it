@@ -22,11 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private Toolbar toolbar;
-    private static final String KEY_EMAIL = "email";
-    private static final String KEY_PASSWORD = "password";
 
-    private String savedEmail = "";
-    private String savedPassword = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +36,6 @@ public class MainActivity extends AppCompatActivity {
         toolbar.setTitleTextColor(Color.WHITE);
         toolbar.getOverflowIcon().setTint(getResources().getColor(android.R.color.white, null));
 
-        // Enable toolbar back arrow for fragments
-        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         if (savedInstanceState == null) {
             FirebaseUser currentUser = mAuth.getCurrentUser();
