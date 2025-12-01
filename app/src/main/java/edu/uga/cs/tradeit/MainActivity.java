@@ -13,16 +13,13 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import edu.uga.cs.tradeit.ui.CategoryListFragment;
-import edu.uga.cs.tradeit.ui.ItemListFragment;
 import edu.uga.cs.tradeit.ui.LoginFragment;
-import edu.uga.cs.tradeit.ui.PendingTransactionsFragment;
 import edu.uga.cs.tradeit.ui.RegisterFragment;
 
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private Toolbar toolbar;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +50,7 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
         // Hide logout if current fragment is Login or Register
-        boolean hideLogout = getCurrentFragment() instanceof LoginFragment
-                || getCurrentFragment() instanceof RegisterFragment;
+        boolean hideLogout = mAuth.getCurrentUser() == null;
         MenuItem logoutItem = menu.findItem(R.id.action_logout);
         logoutItem.setVisible(!hideLogout);
 

@@ -53,6 +53,7 @@ public class CategoryEditFragment extends Fragment {
         etName = view.findViewById(R.id.etName);
         btnSave = view.findViewById(R.id.btnSave);
 
+
         categoriesRef = FirebaseDatabase.getInstance().getReference("categories");
 
         if (getArguments() != null) {
@@ -72,6 +73,7 @@ public class CategoryEditFragment extends Fragment {
 
         MainActivity activity = (MainActivity) requireActivity();
         activity.setToolbarTitle("Edit Category");
+
 
         Toolbar toolbar = activity.findViewById(R.id.toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
