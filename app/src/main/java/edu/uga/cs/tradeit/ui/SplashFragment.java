@@ -60,8 +60,6 @@ public class SplashFragment extends Fragment {
         activity.setToolbarTitle("Home");
 
         Toolbar toolbar = activity.findViewById(R.id.toolbar);
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
-        toolbar.setNavigationOnClickListener(v -> activity.getSupportFragmentManager().popBackStack());
 
         return view;
     }

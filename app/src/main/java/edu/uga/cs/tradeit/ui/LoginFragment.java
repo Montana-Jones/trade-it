@@ -26,6 +26,9 @@ public class LoginFragment extends Fragment {
     private FirebaseAuth mAuth;
     private EditText etEmail, etPassword;
     private Button btnLogin, btnGoRegister;
+    private String savedEmail = "";
+    private String savedPassword = "";
+
 
     public LoginFragment() { }
 
@@ -58,12 +61,11 @@ public class LoginFragment extends Fragment {
                     .commit();
         });
 
+
         MainActivity activity = (MainActivity) requireActivity();
         activity.setToolbarTitle("Login");
 
         Toolbar toolbar = activity.findViewById(R.id.toolbar);
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
-        toolbar.setNavigationOnClickListener(v -> activity.getSupportFragmentManager().popBackStack());
 
         return view;
     }
@@ -72,12 +74,38 @@ public class LoginFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        if (savedInstanceState != null) {
+            etEmail.setText(savedInstanceState.getString("email", ""));
+            etPassword.setText(savedInstanceState.getString("password", ""));
+        }
         // Set toolbar title
         AppCompatActivity activity = (AppCompatActivity) requireActivity();
         if (activity.getSupportActionBar() != null) {
             activity.getSupportActionBar().setTitle("Login");
         }
+
     }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        if (etEmail != null) {
+            outState.putString("email", etEmail.getText().toString());
+        }
+        if (etPassword != null) {
+            outState.putString("password", etPassword.getText().toString());
+        }
+    }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        savedEmail = etEmail != null ? etEmail.getText().toString() : "";
+        savedPassword = etPassword != null ? etPassword.getText().toString() : "";
+    }
+
 
     private void login() {
         String email = etEmail.getText().toString().trim();
@@ -111,4 +139,5 @@ public class LoginFragment extends Fragment {
                 .replace(R.id.container, new SplashFragment())
                 .commit();
     }
+
 }

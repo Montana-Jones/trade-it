@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -21,6 +22,11 @@ public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private Toolbar toolbar;
+    private static final String KEY_EMAIL = "email";
+    private static final String KEY_PASSWORD = "password";
+
+    private String savedEmail = "";
+    private String savedPassword = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,13 +43,16 @@ public class MainActivity extends AppCompatActivity {
         // Enable toolbar back arrow for fragments
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser == null) {
-            navigateToFragment(new LoginFragment(), "Login", false);
-        } else if (savedInstanceState == null) {
-            navigateToFragment(new CategoryListFragment(), "Categories", false);
+        if (savedInstanceState == null) {
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            if (currentUser == null) {
+                navigateToFragment(new LoginFragment(), "Login", false);
+            } else {
+                navigateToFragment(new CategoryListFragment(), "Categories", false);
+            }
         }
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -67,6 +76,13 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        androidx.fragment.app.Fragment currentFragment = getCurrentFragment();
     }
 
     // --------------------

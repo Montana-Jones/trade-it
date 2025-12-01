@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
@@ -23,7 +24,10 @@ public class RegisterFragment extends Fragment {
 
     private FirebaseAuth mAuth;
     private EditText etEmail, etPassword;
-    private Button btnRegister;
+    private Button btnRegister, btnGoLogin;
+
+    private String savedEmail = "";
+    private String savedPassword = "";
 
     public RegisterFragment() { }
 
@@ -35,23 +39,61 @@ public class RegisterFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_register, container, false);
 
-        mAuth = FirebaseAuth.getInstance();
-
         etEmail = view.findViewById(R.id.etEmail);
         etPassword = view.findViewById(R.id.etPassword);
         btnRegister = view.findViewById(R.id.btnRegister);
+        btnGoLogin = view.findViewById(R.id.btnGoLogin);
+
+        // Your existing code below...
+        mAuth = FirebaseAuth.getInstance();
 
         btnRegister.setOnClickListener(v -> register());
+        btnGoLogin.setOnClickListener(v -> {
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.container, new LoginFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
 
         MainActivity activity = (MainActivity) requireActivity();
         activity.setToolbarTitle("Register");
 
         Toolbar toolbar = activity.findViewById(R.id.toolbar);
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
-        toolbar.setNavigationOnClickListener(v -> activity.getSupportFragmentManager().popBackStack());
 
         return view;
     }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        if (savedInstanceState != null) {
+            etEmail.setText(savedInstanceState.getString("email", ""));
+            etPassword.setText(savedInstanceState.getString("password", ""));
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        savedEmail = etEmail != null ? etEmail.getText().toString() : "";
+        savedPassword = etPassword != null ? etPassword.getText().toString() : "";
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        if (etEmail != null) {
+            outState.putString("email", etEmail.getText().toString());
+        }
+        if (etPassword != null) {
+            outState.putString("password", etPassword.getText().toString());
+        }
+    }
+
+
 
     private void register() {
         String email = etEmail.getText().toString().trim();
@@ -71,16 +113,17 @@ public class RegisterFragment extends Fragment {
                     if (task.isSuccessful()) {
                         Toast.makeText(getActivity(), "Registered successfully", Toast.LENGTH_SHORT).show();
 
-                        // Navigate to the main content fragment
                         getParentFragmentManager()
                                 .beginTransaction()
                                 .replace(R.id.container, new CategoryListFragment())
                                 .commit();
                     } else {
-                        Toast.makeText(getActivity(),
+                        Toast.makeText(
+                                getActivity(),
                                 "Registration failed: " +
                                         (task.getException() != null ? task.getException().getMessage() : ""),
-                                Toast.LENGTH_LONG).show();
+                                Toast.LENGTH_LONG
+                        ).show();
                     }
                 });
     }
