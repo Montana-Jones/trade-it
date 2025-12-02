@@ -115,7 +115,7 @@ public class RegisterFragment extends Fragment {
 
                         getParentFragmentManager()
                                 .beginTransaction()
-                                .replace(R.id.container, new CategoryListFragment())
+                                .replace(R.id.container, new SplashFragment())
                                 .commit();
                     } else {
                         Toast.makeText(
