@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
 
@@ -47,9 +48,16 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
         Item item = items.get(position);
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
+
         holder.tvName.setText(item.name);
         holder.tvPrice.setText(item.free ? "Free" : "$" + item.price);
 
+        // Convert timestamp to readable date/time
+        String dateStr = java.text.DateFormat.getDateTimeInstance()
+                .format(new java.util.Date(item.postedAt));
+        holder.tvDate.setText(dateStr);
+
+        // Highlight user's own items
         if (item.postedBy.equals(currentUserId)) {
             holder.itemView.setBackgroundColor(
                     ContextCompat.getColor(holder.itemView.getContext(), R.color.user_item_background)
@@ -60,7 +68,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
             );
         }
 
-        // Show popup menu for edit/delete
+        // Popup menu
         holder.itemView.setOnLongClickListener(v -> {
             if (actionListener != null) showPopupMenu(v, item);
             return true;
@@ -71,6 +79,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
             if (actionListener != null) actionListener.onRequestItem(item);
         });
     }
+
 
     private void showPopupMenu(View view, Item item) {
         PopupMenu popup = new PopupMenu(view.getContext(), view);
@@ -95,12 +104,14 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvPrice;
+        TextView tvName, tvPrice, tvDate;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvName);
             tvPrice = itemView.findViewById(R.id.tvPrice);
+            tvDate = itemView.findViewById(R.id.tvDate);
         }
     }
+
 }
