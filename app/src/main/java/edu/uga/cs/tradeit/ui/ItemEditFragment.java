@@ -32,12 +32,16 @@ public class ItemEditFragment extends Fragment {
     private static final String ARG_PRICE = "price";
     private static final String ARG_FREE = "free";
 
+    private static final String ARG_POSTEDAT = "postedAt";
+
     private EditText etName, etPrice;
     private CheckBox cbFree;
     private Button btnSave;
 
     private String itemId;
     private String categoryId;
+
+    private long postedAt;
 
     private DatabaseReference itemsRef;
 
@@ -50,6 +54,7 @@ public class ItemEditFragment extends Fragment {
         args.putString(ARG_CATEGORY_ID, item.categoryId);
         args.putDouble(ARG_PRICE, item.price);
         args.putBoolean(ARG_FREE, item.free);
+        args.putLong(ARG_POSTEDAT, item.postedAt);
 
         f.setArguments(args);
         return f;
@@ -74,6 +79,8 @@ public class ItemEditFragment extends Fragment {
             categoryId = getArguments().getString(ARG_CATEGORY_ID);
 
             etName.setText(getArguments().getString(ARG_NAME));
+
+            postedAt = getArguments().getLong(ARG_POSTEDAT);
 
             boolean isFree = getArguments().getBoolean(ARG_FREE);
             cbFree.setChecked(isFree);
@@ -148,7 +155,7 @@ public class ItemEditFragment extends Fragment {
                 name,
                 categoryId,
                 user.getUid(),
-                now,
+                postedAt,
                 price,
                 free
         );
